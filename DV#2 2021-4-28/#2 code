@@ -1,0 +1,46 @@
+import csv
+import sys
+sys.path.append('../')
+from country_code import get_country_code
+import pygal_maps_world.maps
+from pygal.style import LightenStyle as LS
+
+with open('departure_data.csv') as dp:
+    reader = csv.reader(dp)
+    header = next(reader)
+    # for index,value in enumerate(header):
+    #     print(index,value)
+
+    departures = {}
+    for row in reader:
+        try:
+            country_name = row[0]
+            data = int(row[58])
+        except ValueError:
+            print(country_name, "missing data")
+        else:
+            code = get_country_code(country_name)
+            if code:
+                departures[code]=data
+
+departures_1, departures_2, departures_3 = {}, {}, {}
+for k,v in departures.items():
+    if 0<v<9999:
+        departures_1[k]=v
+    elif 10000<v<99999:
+        departures_2[k]=v
+    else:
+        departures_3[k]=v
+
+print(len(departures_1), len(departures_2), len(departures_3))
+
+world_chart = pygal_maps_world.maps.World()
+
+world_chart.title = "Air transport, registered carrier departures 2014"
+world_chart.style = LS ('#336699')
+
+world_chart.add("0-9999", departures_1)
+world_chart.add("10000-99999", departures_2)
+world_chart.add(">=99999", departures_3)
+
+world_chart.render_to_file("NO-3.svg")
