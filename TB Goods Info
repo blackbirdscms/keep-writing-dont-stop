@@ -1,0 +1,61 @@
+import requests
+import re
+
+
+def getHTMLTEXT(url):
+    try:
+        kv = {
+            'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Mobile Safari/537.36',
+            'cookie': 'cookies'
+              }
+        r = requests.get(url, headers=kv, timeout=30)
+        r.raise_for_status()
+        r.encoding = r.apparent_encoding
+        return r.text
+    except:
+        print("Error!")
+
+
+def parseGoodInfo(ilt, html):
+    try:
+        plt = re.findall(r'\"view_price\"\:\"[\d\.]*\"', html)
+        llt = re.findall(r'\"item_loc\"\:\".*?\"', html)
+        tlt = re.findall(r'\"raw_title\"\:\".*?\"', html)
+        for i in range(len(tlt)):
+            price = eval(plt[i].split(':')[1])
+            location = eval(llt[i].split(':')[1])
+            title = eval(tlt[i].split(':')[1])
+            ilt.append([price, location, title])
+    except:
+        return "Error2"
+
+
+def showInfo(ilt):
+    try:
+        tplt = "{:4}\t{:8}\t{:16}\t{:24}"
+        print(tplt.format("No.", "Price", "Location", "Title", chr(12288)))
+        count = 0
+        for n in ilt:
+            count += 1
+            print(tplt.format(count, n[0], n[1], n[2], chr(12288)))
+    except:
+        print('Error3')
+
+
+def main():
+    goods = 'The Weeknd'
+    depth = 3
+    start_url = 'https://s.taobao.com/search?q=' + goods
+    infoList = []
+    for i in range(depth):
+        try:
+            url = start_url + '&s=' + str(44 * i)
+            html = getHTMLTEXT(url)
+            parseGoodInfo(infoList, html)
+        except:
+            continue
+    showInfo(infoList)
+
+
+if __name__ == '__main__':
+    main()
