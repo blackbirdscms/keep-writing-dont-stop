@@ -1,0 +1,55 @@
+import requests
+from bs4 import BeautifulSoup
+
+def getHTMLText(url):
+    kv = {
+        'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Mobile Safari/537.36',
+        'cookie': 'your cookie' }
+    try:
+        r = requests.get(url, headers=kv)
+        r.raise_for_status()
+        r.encoding = r.apparent_encoding
+        return r.text
+    except:
+        print("Url Error.")
+
+def parsePage(lst, url):
+    soup = BeautifulSoup(url, 'html.parser')
+
+    for good in soup.find_all('div', class_='gl-i-wrap'):
+        try:
+            price = good.find('div', class_='p-price').text.strip()
+            # print(price.text)
+
+            title = good.find('div', class_='p-name').text.split(' ')[0].strip()
+            # print(title.text.split(' ')[0])
+
+            shop = good.find('div', class_="p-shop").text.strip()
+            # print(shop.text)
+
+            lst.append([title, price, shop])
+        except:
+            print("parse Error.")
+    return lst
+
+def showInfo(lst):
+    tplt = "{:2}\t{:12}\t{:20}\t{:28}"
+    print(tplt.format("Nums", "Good", "Price", "Shop", chr(12288)))
+    count = 0
+    for i in lst:
+        count += 1
+        print(tplt.format(count, i[0], i[1], i[2], chr(12288)))
+
+def main():
+    start_url = 'https://search.jd.com/Search?keyword='
+    goods = '香水'
+    url = start_url + goods
+    goods_info = []
+    html = getHTMLText(url)
+    parsePage(goods_info, html)
+
+    showInfo(goods_info)
+
+
+if __name__ == "__main__":
+    main()
